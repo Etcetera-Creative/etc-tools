@@ -39,3 +39,31 @@ model Response {
 
   @@index([planId])
 }
+
+model ShortLink {
+  id             String      @id @default(cuid())
+  slug           String      @unique
+  destinationUrl String
+  creatorId      String      // Supabase user ID
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  expiresAt      DateTime?   // null = never expires
+  clickCount     Int         @default(0)
+  clicks         LinkClick[]
+
+  @@index([creatorId])
+  @@index([expiresAt])
+}
+
+model LinkClick {
+  id          String    @id @default(cuid())
+  shortLinkId String
+  shortLink   ShortLink @relation(fields: [shortLinkId], references: [id], onDelete: Cascade)
+  clickedAt   DateTime  @default(now())
+  referrer    String?
+  userAgent   String?
+  ipAddress   String?
+
+  @@index([shortLinkId])
+  @@index([clickedAt])
+}

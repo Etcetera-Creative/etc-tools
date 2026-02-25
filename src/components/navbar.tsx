@@ -43,16 +43,24 @@ export function Navbar() {
     <nav className="border-b bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-8 h-14 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-          <Link href={loggedIn ? "/dashboard" : "/"} className="font-semibold text-lg shrink-0">
-            Etcetera
+          <Link href="/" className="font-semibold text-lg shrink-0">
+            Etc Tools
           </Link>
           {loggedIn && (
-            <Link
-              href="/dashboard"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate"
-            >
-              Dashboard
-            </Link>
+            <>
+              <Link
+                href="/scheduler"
+                className={`text-sm ${pathname.startsWith("/scheduler") || pathname.startsWith("/dashboard") || pathname.startsWith("/plan") ? "text-foreground" : "text-muted-foreground"} hover:text-foreground transition-colors truncate`}
+              >
+                Scheduler
+              </Link>
+              <Link
+                href="/shortener"
+                className={`text-sm ${pathname.startsWith("/shortener") ? "text-foreground" : "text-muted-foreground"} hover:text-foreground transition-colors truncate`}
+              >
+                URL Shortener
+              </Link>
+            </>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">

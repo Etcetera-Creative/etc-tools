@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Etcetera Scheduler",
-  description: "Make scheduling fun things with your friends easier",
+  title: "Etc Tools",
+  description: "Scheduler and URL shortener tools to make life easier",
 };
 
 export default function RootLayout({
