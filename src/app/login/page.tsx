@@ -96,7 +96,7 @@ export default function LoginPage() {
               {loading ? "..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-4 text-center text-sm space-y-2">
             <button
               onClick={() => { 
                 setIsSignUp(!isSignUp); 
@@ -108,6 +108,13 @@ export default function LoginPage() {
             >
               {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
             </button>
+            {!isSignUp && (
+              <div>
+                <a href="/forgot-password" className="text-muted-foreground hover:underline">
+                  Forgot password?
+                </a>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

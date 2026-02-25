@@ -5,7 +5,8 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as "email" | "recovery" | null;
-  const next = searchParams.get("next") ?? `${origin}/dashboard`;
+  const defaultNext = type === "recovery" ? `${origin}/reset-password` : `${origin}/dashboard`;
+  const next = searchParams.get("next") ?? defaultNext;
 
   if (token_hash && type) {
     const supabase = await createServerSupabase();

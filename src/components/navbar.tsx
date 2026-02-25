@@ -11,6 +11,7 @@ import { useTheme } from "next-themes";
 export function Navbar() {
   const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
@@ -19,6 +20,7 @@ export function Navbar() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setLoggedIn(!!user);
+      setIsAdmin(user?.email === "jamie@etcetera.cr");
     });
   }, []);
 
@@ -60,6 +62,14 @@ export function Navbar() {
               >
                 URL Shortener
               </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={`text-sm ${pathname.startsWith("/admin") ? "text-foreground" : "text-muted-foreground"} hover:text-foreground transition-colors truncate`}
+                >
+                  Admin
+                </Link>
+              )}
             </>
           )}
         </div>
