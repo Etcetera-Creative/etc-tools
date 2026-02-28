@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarGrid } from "@/components/calendar-grid";
+import { DateSelector } from "@/components/date-selector";
 import { TimeWindowSelector } from "@/components/time-window-selector";
 import { MarkdownDescription } from "@/components/markdown-description";
 import { parseISO, isSameDay } from "date-fns";
@@ -62,9 +62,11 @@ export default function PlanGuestPage() {
         const next = prev.filter((d) => !isSameDay(d, date));
         // Remove time windows for deselected date
         const key = date.toISOString().split("T")[0];
-        const newTW = { ...guestTimeWindows };
-        delete newTW[key];
-        setGuestTimeWindows(newTW);
+        setGuestTimeWindows((tw) => {
+          const newTW = { ...tw };
+          delete newTW[key];
+          return newTW;
+        });
         return next;
       }
       const next = [...prev, date].sort((a, b) => a.getTime() - b.getTime());
@@ -80,6 +82,30 @@ export default function PlanGuestPage() {
       }
       return next;
     });
+  }
+
+  function selectAllDates(dates: Date[]) {
+    const next = [...dates].sort((a, b) => a.getTime() - b.getTime());
+    setSelectedDates(next);
+
+    if (plan?.mode === "DATE_TIME_SELECTION" && plan.timeWindows) {
+      setGuestTimeWindows((prev) => {
+        const updated: Record<string, TimeWindow[]> = {};
+
+        for (const date of next) {
+          const key = date.toISOString().split("T")[0];
+          if (prev[key]?.length) {
+            updated[key] = prev[key];
+            continue;
+          }
+          const plannerWindows = plan.timeWindows?.[key] || [];
+          const defaultWindow = plannerWindows[0] || { start: "09:00", end: "17:00" };
+          updated[key] = [{ start: defaultWindow.start, end: defaultWindow.end }];
+        }
+
+        return updated;
+      });
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -213,17 +239,14 @@ export default function PlanGuestPage() {
 
             <div className="space-y-2">
               <Label>Select Your Available Dates</Label>
-              <CalendarGrid
+              <DateSelector
                 rangeStart={parseISO(plan.startDate)}
                 rangeEnd={parseISO(plan.endDate)}
                 selectedDates={selectedDates}
-                onToggleDate={toggleDate}
+                onToggle={toggleDate}
                 enabledDates={enabledDates}
-                selectable
+                onSelectAll={selectAllDates}
               />
-              <p className="text-xs text-muted-foreground">
-                {selectedDates.length} date{selectedDates.length !== 1 ? "s" : ""} selected
-              </p>
             </div>
 
             {/* Time window selection for DATE_TIME_SELECTION */}

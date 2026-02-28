@@ -30,29 +30,41 @@ export default function NewPlanPage() {
   const needsTimeWindows = mode === "DATE_TIME_SELECTION";
   const totalSteps = needsTimeWindows ? 3 : 2;
 
-  function toggleDate(date: Date) {
-    setSelectedDates((prev) => {
-      const exists = prev.find((d) => isSameDay(d, date));
-      let next: Date[];
-      if (exists) {
-        next = prev.filter((d) => !isSameDay(d, date));
-      } else {
-        next = [...prev, date].sort((a, b) => a.getTime() - b.getTime());
-      }
-      // Sync timeWindows: remove entries for deselected dates
-      const dateKeys = new Set(next.map((d) => d.toISOString().split("T")[0]));
-      const newTW = { ...timeWindows };
+  function syncTimeWindowsForDates(dates: Date[]) {
+    const dateKeys = new Set(dates.map((d) => d.toISOString().split("T")[0]));
+
+    setTimeWindows((prev) => {
+      const newTW = { ...prev };
+
       for (const key of Object.keys(newTW)) {
         if (!dateKeys.has(key)) delete newTW[key];
       }
-      // Add default windows for new dates
-      for (const d of next) {
+
+      for (const d of dates) {
         const key = d.toISOString().split("T")[0];
         if (!newTW[key]) newTW[key] = [{ start: "09:00", end: "17:00" }];
       }
-      setTimeWindows(newTW);
+
+      return newTW;
+    });
+  }
+
+  function toggleDate(date: Date) {
+    setSelectedDates((prev) => {
+      const exists = prev.find((d) => isSameDay(d, date));
+      const next = exists
+        ? prev.filter((d) => !isSameDay(d, date))
+        : [...prev, date].sort((a, b) => a.getTime() - b.getTime());
+
+      syncTimeWindowsForDates(next);
       return next;
     });
+  }
+
+  function selectAllDates(dates: Date[]) {
+    const next = [...dates].sort((a, b) => a.getTime() - b.getTime());
+    setSelectedDates(next);
+    syncTimeWindowsForDates(next);
   }
 
   function canProceed(): boolean {
@@ -203,6 +215,7 @@ export default function NewPlanPage() {
                     rangeEnd={parseISO(endDate)}
                     selectedDates={selectedDates}
                     onToggle={toggleDate}
+                    onSelectAll={selectAllDates}
                   />
                 </div>
               )}

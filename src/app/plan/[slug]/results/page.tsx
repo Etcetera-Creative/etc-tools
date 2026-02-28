@@ -11,7 +11,7 @@ import { CalendarGrid } from "@/components/calendar-grid";
 import { ComparisonCalendar, getPersonColor } from "@/components/comparison-calendar";
 import { TimeHeatmapBar } from "@/components/time-heatmap-bar";
 import { format, eachDayOfInterval, parseISO, isSameDay } from "date-fns";
-import { createClient } from "@/lib/supabase/client";
+import { Pencil } from "lucide-react";
 import type { TimeWindow } from "@/components/time-window-editor";
 
 interface ResponseData {
@@ -187,7 +187,20 @@ export default function ResultsPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold">{plan.name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">{plan.name}</h1>
+            {isOwner && !isEditingDescription && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditingDescription(true)}
+                className="h-8 w-8"
+                aria-label="Edit description"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           {isEditingDescription ? (
             <div className="mt-2 space-y-2">
               <Textarea
@@ -206,16 +219,9 @@ export default function ResultsPage() {
               </div>
             </div>
           ) : (
-            <div className="mt-1 flex items-start gap-2">
-              <p className="text-muted-foreground flex-1">
-                {plan.description || (isOwner ? "No description" : "")}
-              </p>
-              {isOwner && (
-                <Button variant="ghost" size="sm" onClick={() => setIsEditingDescription(true)} className="h-auto py-1 px-2 text-xs">
-                  Edit
-                </Button>
-              )}
-            </div>
+            <p className="mt-1 text-muted-foreground">
+              {plan.description || (isOwner ? "No description" : "")}
+            </p>
           )}
         </div>
         <div className="flex gap-2 w-full sm:w-auto">

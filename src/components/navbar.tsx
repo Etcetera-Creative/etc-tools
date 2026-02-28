@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState, useRef } from "react";
-import { CircleUser, KeyRound, LogOut, Moon, Sun } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, CircleUser, KeyRound, LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function Navbar() {
@@ -13,7 +13,9 @@ export function Navbar() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const toolsDropdownRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
   const { theme, setTheme } = useTheme();
 
@@ -24,23 +26,50 @@ export function Navbar() {
     });
   }, []);
 
-  // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
+      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(event.target as Node)) {
+        setToolsDropdownOpen(false);
+      }
     }
-    
-    if (dropdownOpen) {
+
+    if (dropdownOpen || toolsDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [dropdownOpen]);
+  }, [dropdownOpen, toolsDropdownOpen]);
 
   // Don't show navbar on login page; show on landing only if logged in
   if (pathname === "/login") return null;
   if (pathname === "/" && !loggedIn) return null;
+
+  const tools = [
+    {
+      label: "Scheduler",
+      href: "/scheduler",
+      active:
+        pathname.startsWith("/scheduler") || pathname.startsWith("/dashboard") || pathname.startsWith("/plan"),
+    },
+    {
+      label: "URL Shortener",
+      href: "/shortener",
+      active: pathname.startsWith("/shortener"),
+    },
+    ...(isAdmin
+      ? [
+          {
+            label: "Admin",
+            href: "/admin",
+            active: pathname.startsWith("/admin"),
+          },
+        ]
+      : []),
+  ];
+
+  const activeToolLabel = tools.find((tool) => tool.active)?.label ?? "Tools";
 
   return (
     <nav className="border-b bg-background">
@@ -50,76 +79,81 @@ export function Navbar() {
             Etc Tools
           </Link>
           {loggedIn && (
-            <>
-              <Link
-                href="/scheduler"
-                className={`text-sm ${pathname.startsWith("/scheduler") || pathname.startsWith("/dashboard") || pathname.startsWith("/plan") ? "text-foreground" : "text-muted-foreground"} hover:text-foreground transition-colors truncate`}
+            <div className="relative" ref={toolsDropdownRef}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-2 text-sm"
+                onClick={() => {
+                  setToolsDropdownOpen((open) => !open);
+                  setDropdownOpen(false);
+                }}
               >
-                Scheduler
-              </Link>
-              <Link
-                href="/shortener"
-                className={`text-sm ${pathname.startsWith("/shortener") ? "text-foreground" : "text-muted-foreground"} hover:text-foreground transition-colors truncate`}
-              >
-                URL Shortener
-              </Link>
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className={`text-sm ${pathname.startsWith("/admin") ? "text-foreground" : "text-muted-foreground"} hover:text-foreground transition-colors truncate`}
-                >
-                  Admin
-                </Link>
+                {activeToolLabel}
+                <ChevronDown className="h-4 w-4 ml-1" />
+              </Button>
+              {toolsDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-44 bg-background border rounded-md shadow-lg z-50">
+                  {tools.map((tool) => (
+                    <Link
+                      key={tool.href}
+                      href={tool.href}
+                      onClick={() => setToolsDropdownOpen(false)}
+                      className={`block px-4 py-2 text-sm transition-colors hover:bg-accent ${
+                        tool.active ? "text-foreground" : "text-muted-foreground"
+                      }`}
+                    >
+                      {tool.label}
+                    </Link>
+                  ))}
+                </div>
               )}
-            </>
+            </div>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {loggedIn ? (
-            <>
-              <div className="relative" ref={dropdownRef}>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                >
-                  <CircleUser className="h-5 w-5" />
-                </Button>
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-background border rounded-md shadow-lg z-50">
-                    <button
-                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"
-                    >
-                      {theme === "dark" ? (
-                        <Sun className="h-4 w-4" />
-                      ) : (
-                        <Moon className="h-4 w-4" />
-                      )}
-                      {theme === "dark" ? "Light Mode" : "Dark Mode"}
-                    </button>
-                    <a
-                      href="/reset-password"
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"
-                    >
-                      <KeyRound className="h-4 w-4" />
-                      Change Password
-                    </a>
-                    <button
-                      onClick={async () => {
-                        await supabase.auth.signOut();
-                        window.location.href = "/";
-                      }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
+            <div className="relative" ref={profileDropdownRef}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                onClick={() => {
+                  setDropdownOpen((open) => !open);
+                  setToolsDropdownOpen(false);
+                }}
+              >
+                <CircleUser className="h-5 w-5" />
+              </Button>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-background border rounded-md shadow-lg z-50">
+                  <button
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"
+                  >
+                    {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                  </button>
+                  <a
+                    href="/reset-password"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"
+                  >
+                    <KeyRound className="h-4 w-4" />
+                    Change Password
+                  </a>
+                  <button
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      window.location.href = "/";
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Link href="/login">
               <Button size="sm">Sign In</Button>
