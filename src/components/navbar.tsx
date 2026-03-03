@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, CircleUser, KeyRound, LogOut, Moon, Sun } from "lucide-react";
+import { ChevronDown, CircleUser, Code2, KeyRound, LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function Navbar() {
@@ -134,6 +134,13 @@ export function Navbar() {
                     {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                     {theme === "dark" ? "Light Mode" : "Dark Mode"}
                   </button>
+                  <a
+                    href="/settings/api-keys"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"
+                  >
+                    <Code2 className="h-4 w-4" />
+                    API Keys
+                  </a>
                   <a
                     href="/reset-password"
                     className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"

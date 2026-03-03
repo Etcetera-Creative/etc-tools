@@ -40,6 +40,21 @@ model Response {
   @@index([planId])
 }
 
+model ApiKey {
+  id         String    @id @default(cuid())
+  key        String    @unique // SHA-256 hash of the raw key
+  prefix     String    // First 8 chars of raw key for display
+  name       String    // User-friendly label
+  creatorId  String    // Supabase user ID
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  revoked    Boolean   @default(false)
+
+  @@index([key])
+  @@index([creatorId])
+}
+
 model ShortLink {
   id             String      @id @default(cuid())
   slug           String      @unique
