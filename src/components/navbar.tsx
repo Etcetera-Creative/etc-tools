@@ -135,11 +135,11 @@ export function Navbar() {
                     {theme === "dark" ? "Light Mode" : "Dark Mode"}
                   </button>
                   <a
-                    href="/settings/api-keys"
+                    href="/developers"
                     className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent transition-colors"
                   >
                     <Code2 className="h-4 w-4" />
-                    API Keys
+                    Developers
                   </a>
                   <a
                     href="/reset-password"
