@@ -46,8 +46,6 @@ export function Navbar() {
   if (pathname === "/login") return null;
   if (pathname === "/" && !loggedIn) return null;
 
-  const showBlog = pathname.startsWith("/blog");
-
   const tools = [
     {
       label: "Scheduler",
@@ -79,14 +77,6 @@ export function Navbar() {
         <div className="flex items-center gap-3 sm:gap-6 min-w-0">
           <Link href="/" className="font-semibold text-lg shrink-0">
             Etc Tools
-          </Link>
-          <Link
-            href="/blog"
-            className={`text-sm transition-colors hover:text-foreground ${
-              showBlog ? "text-foreground" : "text-muted-foreground"
-            }`}
-          >
-            Blog
           </Link>
           {loggedIn && (
             <div className="relative" ref={toolsDropdownRef}>
